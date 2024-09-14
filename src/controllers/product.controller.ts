@@ -138,6 +138,13 @@ const updateProduct = async (req: Request, res: Response) => {
         }
       }
 
+      //Verificar se o arquivo não está vazio
+      if (!file.buffer || file.size === 0) {
+        return res.status(400).json({
+          message: "O arquivo da nova imagem está vazio ou corrompido",
+        });
+      }
+
       // Fazer upload da nova imagem no S3
       const newImageKey = `${uuidv4()}-${file.originalname}`;
       const uploadParams = {
