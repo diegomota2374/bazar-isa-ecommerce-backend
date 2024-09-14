@@ -5,12 +5,13 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
+  upload,
 } from "../controllers/product.controller";
 
 const router = express.Router();
 
 // Route to create a new product
-router.post("/", createProduct);
+router.post("/", upload.single("imgProduct"), createProduct);
 
 // Route to get all products
 router.get("/", getAllProducts);
@@ -19,7 +20,7 @@ router.get("/", getAllProducts);
 router.get("/:id", getProductById);
 
 // Route to update a product by ID
-router.put("/:id", updateProduct);
+router.put("/:id", upload.single("imgProduct"), updateProduct);
 
 // Route to delete a product by ID
 router.delete("/:id", deleteProduct);
