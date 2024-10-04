@@ -9,6 +9,7 @@ import {
 } from "../controllers/product.controller";
 
 import multer from "multer";
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ const storage = multer.memoryStorage(); // Armazenar na memória
 const uploadEdit = multer({ storage });
 
 // Route to create a new product
-router.post("/", upload.single("imgProduct"), createProduct);
+router.post("/", authenticate, upload.single("imgProduct"), createProduct);
 
 // Route to get all products
 router.get("/", getAllProducts);
@@ -25,9 +26,14 @@ router.get("/", getAllProducts);
 router.get("/:id", getProductById);
 
 // Route to update a product by ID
-router.put("/:id", uploadEdit.single("imgProduct"), updateProduct);
+router.put(
+  "/:id",
+  authenticate,
+  uploadEdit.single("imgProduct"),
+  updateProduct
+);
 
 // Route to delete a product by ID
-router.delete("/:id", deleteProduct);
+router.delete("/:id", authenticate, deleteProduct);
 
 export default router;

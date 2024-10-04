@@ -16,7 +16,10 @@ export const authenticate = (
     const decoded = jwt.verify(token, process.env.JWT_SECRET!);
     (req as any).user = decoded;
     next();
-  } catch (err) {
-    res.status(400).send("Invalid token.");
+  } catch (err: any) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).send("Token expired.");
+    }
+    return res.status(400).send("Invalid token.");
   }
 };

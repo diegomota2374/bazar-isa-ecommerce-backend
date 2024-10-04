@@ -19,7 +19,6 @@ const ProductSchema: Schema = new Schema(
     description: { type: String, required: true },
     status: {
       type: String,
-      enum: ["available", "unavailable"],
       required: true,
     },
     category: { type: String, required: true },
