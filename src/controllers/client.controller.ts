@@ -5,6 +5,7 @@ import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import { promisify } from "util";
 import crypto from "crypto";
+import mongoose from "mongoose";
 
 const JWT_SECRET = "seu_segredo_aqui";
 const urlBase = process.env.URL_BASE_FRONTEND;
@@ -250,6 +251,127 @@ export const updateClient = async (
     return res
       .status(500)
       .json({ message: "Erro ao atualizar cliente.", error });
+  }
+};
+
+export const getFavorite = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Usuário não autenticado." });
+    }
+
+    const clientId = req.user.id; // O ID do cliente vem do token JWT
+    const client = await Client.findById(clientId).populate("favorites");
+    if (!client) {
+      return res.status(404).json({ message: "Cliente não encontrado." });
+    }
+
+    // Retorna todos os produtos favoritos
+    return res.status(200).json(client.favorites);
+  } catch (error) {
+    return res.status(500).json({ message: "Erro ao obter favoritos.", error });
+  }
+};
+
+export const getFavoriteProducts = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Usuário não autenticado." });
+    }
+
+    const clientId = req.user.id; // O ID do cliente vem do token JWT
+    const { productId } = req.params; // O ID do produto vem dos parâmetros da URL
+
+    // Converte o productId para ObjectId
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: "ID do produto inválido." });
+    }
+
+    const productObjectId = new mongoose.Types.ObjectId(productId);
+
+    const client = await Client.findById(clientId); // Busca o cliente pelo ID
+
+    if (!client) {
+      return res.status(404).json({ message: "Cliente não encontrado." });
+    }
+
+    // Verifica se o produto está na lista de favoritos do cliente
+    const isFavorited = client.favorites.some(
+      (favoriteId) => favoriteId.toString() === productObjectId.toString() // Usa o método `equals` para comparar ObjectIds
+    );
+
+    return res.status(200).json({ isFavorited });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Erro ao verificar favoritos.", error });
+  }
+};
+
+// Adicionar um produto aos favoritos
+export const addFavoriteProduct = async (req: Request, res: Response) => {
+  try {
+    const { productId } = req.body;
+
+    if (!req.user) {
+      return res.status(401).json({ message: "Usuário não autenticado." });
+    }
+
+    const clientId = req.user.id;
+
+    const client = await Client.findById(clientId);
+
+    if (!client) {
+      return res.status(404).json({ message: "Cliente não encontrado" });
+    }
+
+    // Verificar se o produto já está na lista de favoritos
+    if (client.favorites.includes(productId)) {
+      return res
+        .status(400)
+        .json({ message: "Este produto já está na lista de favoritos" });
+    }
+
+    // Adicionar o produto à lista de favoritos
+    client.favorites.push(productId);
+    await client.save();
+
+    return res
+      .status(200)
+      .json({ message: "Produto adicionado aos favoritos" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Erro ao adicionar favorito", error });
+  }
+};
+
+// Remover um produto dos favoritos
+export const removeFavoriteProduct = async (req: Request, res: Response) => {
+  try {
+    const { productId } = req.body;
+
+    if (!req.user) {
+      return res.status(401).json({ message: "Usuário não autenticado." });
+    }
+
+    const clientId = req.user.id; // Supondo que o ID do cliente está no token JWT
+
+    const client = await Client.findById(clientId);
+
+    if (!client) {
+      return res.status(404).json({ message: "Cliente não encontrado" });
+    }
+
+    // Remover o produto da lista de favoritos
+    client.favorites = client.favorites.filter(
+      (favProductId) => favProductId.toString() !== productId
+    );
+    await client.save();
+
+    return res.status(200).json({ message: "Produto removido dos favoritos" });
+  } catch (error) {
+    return res.status(500).json({ message: "Erro ao remover favorito", error });
   }
 };
 

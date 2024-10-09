@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { UserPayload } from "../types/express";
 
-export const authenticate = (
+const JWT_SECRET = "seu_segredo_aqui"; // Move this to environment variables
+
+export const authMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
@@ -9,17 +12,14 @@ export const authenticate = (
   const token = req.header("Authorization")?.replace("Bearer ", "");
 
   if (!token) {
-    return res.status(401).send("Access denied. No token provided.");
+    return res.status(401).json({ message: "No token provided" });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-    (req as any).user = decoded;
+    const decoded = jwt.verify(token, JWT_SECRET) as UserPayload;
+    req.user = { id: decoded.id };
     next();
-  } catch (err: any) {
-    if (err.name === "TokenExpiredError") {
-      return res.status(401).send("Token expired.");
-    }
-    return res.status(400).send("Invalid token.");
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
   }
 };

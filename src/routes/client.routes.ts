@@ -9,7 +9,12 @@ import {
   loginClient,
   forgotPassword,
   resetPassword,
+  addFavoriteProduct,
+  removeFavoriteProduct,
+  getFavoriteProducts,
+  getFavorite,
 } from "../controllers/client.controller";
+import { authMiddleware } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
@@ -23,7 +28,7 @@ router.post("/login", loginClient);
 router.get("/", getClients);
 
 // Rota para obter um cliente pelo ID
-router.get("/:id", getClientById);
+// router.get("/:id", getClientById);
 
 // Rota para atualizar um cliente pelo ID
 router.put("/:id", updateClient);
@@ -39,5 +44,16 @@ router.post("/forgot-password", forgotPassword);
 
 // Rota para redefinição de senha
 router.post("/reset-password/:token", resetPassword);
+
+// Define the route to get favorite products by client ID
+router.get("/favorites/:productId", authMiddleware, getFavoriteProducts);
+
+router.get("/favorites", authMiddleware, getFavorite);
+
+//Rota para adicionar um produto favorito
+router.post("/favorites/add", authMiddleware, addFavoriteProduct);
+
+//Rota para remover um produto favorito
+router.post("/favorites/remove", authMiddleware, removeFavoriteProduct);
 
 export default router;
