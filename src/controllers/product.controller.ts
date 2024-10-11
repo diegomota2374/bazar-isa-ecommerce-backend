@@ -34,11 +34,19 @@ const upload = multer({
 
 // Função para criar um novo produto com imagem
 const createProduct = async (req: Request, res: Response) => {
-  const { name, description, status, category, state, price, discount } =
+  const { name, description, status, category, state, price, size, discount } =
     req.body;
 
   // Verifica se todos os campos obrigatórios estão presentes
-  if (!name || !description || !status || !category || !state || !price) {
+  if (
+    !name ||
+    !description ||
+    !status ||
+    !category ||
+    !state ||
+    !price ||
+    !size
+  ) {
     return res
       .status(400)
       .json({ message: "Todos os campos obrigatórios devem ser preenchidos." });
@@ -59,6 +67,7 @@ const createProduct = async (req: Request, res: Response) => {
       category,
       state,
       price,
+      size,
       discount,
       imgProduct: imgProductUrl, // Armazena a URL da imagem
     });

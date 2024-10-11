@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { UserPayload } from "../types/express";
 
-const JWT_SECRET = "seu_segredo_aqui"; // Move this to environment variables
+const JWT_SECRET = process.env.JWT_SECRET || "seu_segredo_aqui";
 
 export const authMiddleware = (
   req: Request,
